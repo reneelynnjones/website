@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Renee Jones" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 1: Exploratory Data Analysis</title>
+    <meta name="generator" content="Hugo 0.79.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/post/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project/project1/">Project 1: Exploratory Data Analysis</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+<link href="/rmarkdown-libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/anchor-sections/anchor-sections.js"></script>
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/plotly-binding/plotly.js"></script>
+<script src="/rmarkdown-libs/typedarray/typedarray.min.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+<link href="/rmarkdown-libs/plotly-htmlwidgets-css/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/plotly-main/plotly-latest.min.js"></script>
+
+
+<div id="data-wrangling-and-data-exploration" class="section level2">
+<h2>Data Wrangling and Data Exploration</h2>
+<P style="page-break-before: always">
+<div style="page-break-after: always;"></div>
+<div id="introduction" class="section level4">
+<h4>1. Introduction</h4>
+<p>The first dataset I chose for my exploratory data analysis was state.x77, renamed State. It contains 50 observations for each U.S. state and includes data for each state. Those variables include population, income per capita, illiteracy, life expectancy, murder rates, high school graduation percentage, frost or mean days with a temperature below freezing, and area. My second dataset is TeenPregnancy which also includes 50 observations for each U.S. state and includes 3 other varibles. Those variables include their identity in the Civil War, church attendence percentage, and number of teen pregnancies.</p>
+<p>The state.x77 dataset I found through the datasets package and it particulary stood out to me because it met all the criteria, but also because the data corresponded to content of another course I am taking. In Health and Society we are diving into the social conditions that lead to worse health outcomes and lower life expectancies, which include income and education. Three of those variables are included in this dataset. The TeenPregnancy dataset I found through the <a href="https://vincentarelbundock.github.io/Rdatasets/datasets.html" class="uri">https://vincentarelbundock.github.io/Rdatasets/datasets.html</a> source and it stood out to me because it not only had 50 states, but teen pregnancy also aligns with healthcare. I am interested to see how these datasets line up in terms of these social conditions and health outcomes across U.S. states. I expect to see associations between life expectancy, illiteracy, income, and teen pregnancies. Particulary states with low income and life expectancy will have high illiteracy and teen pregnancies.</p>
+<pre class="r"><code>library(Stat2Data)
+library(readr)
+TeenPregnancy &lt;- read.csv(&quot;TeenPregnancy.csv&quot;)
+library(tidyverse)
+State &lt;- state.x77</code></pre>
+</div>
+<div id="tidying-rearranging-widelong" class="section level4">
+<h4>2. Tidying: Rearranging Wide/Long</h4>
+<pre class="r"><code>state &lt;- State %&gt;% as.data.frame %&gt;% rownames_to_column(&quot;State&quot;)
+teenpregnancy &lt;- TeenPregnancy %&gt;% column_to_rownames(&quot;X1&quot;)
+teenpregnancy1 &lt;- teenpregnancy %&gt;% pivot_wider(names_from = &quot;CivilWar&quot;, values_from=&quot;Church&quot;)
+teenpregnancy2 &lt;- teenpregnancy1 %&gt;% pivot_longer(cols = c(&quot;O&quot;, &quot;C&quot;, &quot;U&quot;, &quot;B&quot;), names_to= &quot;CivilWar&quot;, values_to= &quot;Church&quot;, values_drop_na=T)
+teenpregnancy$CivilWar[teenpregnancy$CivilWar==&quot;C&quot;] &lt;- &quot;Confederate&quot;
+teenpregnancy$CivilWar[teenpregnancy$CivilWar==&quot;O&quot;] &lt;- &quot;Other&quot;
+teenpregnancy$CivilWar[teenpregnancy$CivilWar==&quot;U&quot;] &lt;- &quot;Union&quot;
+teenpregnancy$CivilWar[teenpregnancy$CivilWar== &quot;B&quot;] &lt;- &quot;Border&quot;
+glimpse(teenpregnancy)</code></pre>
+<pre><code>## Rows: 50
+## Columns: 4
+## $ State    &lt;chr&gt; &quot;AK&quot;, &quot;AL&quot;, &quot;AR&quot;, &quot;AZ&quot;, &quot;CA&quot;, &quot;CO&quot;, &quot;CT&quot;, &quot;DE&quot;, &quot;FL&quot;, &quot;GA&quot;, …
+## $ CivilWar &lt;chr&gt; &quot;Other&quot;, &quot;Confederate&quot;, &quot;Confederate&quot;, &quot;Other&quot;, &quot;Union&quot;, &quot;Ot…
+## $ Church   &lt;int&gt; 26, 46, 45, 33, 28, 25, 25, 35, 32, 39, 25, 32, 34, 32, 35, …
+## $ Teen     &lt;int&gt; 64, 62, 73, 60, 59, 50, 44, 67, 60, 64, 65, 44, 47, 57, 53, …</code></pre>
+<p>The state dataset had each U.S. state listed as a row with observations pertaining to that row, so I created a new column with each state. The teenpregnancy dataset had one unnecessary column listing the rows from 1 to 50, so I changed that column data into just rows. I then made the teenpregnancy dataset untidy by rearranging it wide with each Civil War catergory becoming its own column with the Church values. I then tidyed it back by rearranging it long and putting each Civil War catergory column back into one. Additionally, I changed the abbreviated one letter Civil War identities of each state from C, O, U, and B, to Confederate, Other, Union, and Border.</p>
+</div>
+<div id="joiningmerging" class="section level4">
+<h4>3. Joining/Merging</h4>
+<pre class="r"><code>teenpreg &lt;- teenpregnancy %&gt;% mutate(State=recode(State, AK=&quot;Alaska&quot;,AL= &quot;Alabama&quot;, AR=&quot;Arkansas&quot;, AZ=&quot;Arizona&quot;, CA=&quot;California&quot;, CO=&quot;Colorado&quot;, CT= &quot;Connecticut&quot;, DE = &quot;Delaware&quot;, FL=&quot;Florida&quot;, GA=&quot;Georgia&quot;, HI=&quot;Hawaii&quot;, IA=&quot;Iowa&quot;, ID=&quot;Idaho&quot;, IL= &quot;Illinois&quot;, IN=&quot;Indiana&quot;, KS= &quot;Kansas&quot;, KY= &quot;Kentucky&quot;, LA= &quot;Louisiana&quot;, MA= &quot;Maine&quot;, MD= &quot;Maryland&quot;, ME= &quot;Massachusetts&quot;, MI= &quot;Michigan&quot;, MN=&quot;Minnesota&quot;, MO=&quot;Missouri&quot;, MS= &quot;Mississippi&quot;, MT=&quot;Montana&quot;, NC=&quot;North Carolina&quot;, ND=&quot;North Dakota&quot;, NE=&quot;Nebraska&quot;, NV=&quot;Nevada&quot;, NH=&quot;New Hampshire&quot;, NJ=&quot;New Jersey&quot;, NY= &quot;New York&quot;, NM=&quot;New Mexico&quot;, OH=&quot;Ohio&quot;, OK=&quot;Oklahoma&quot;, OR=&quot;Oregon&quot;, PA=&quot;Pennsylvania&quot;, RI=&quot;Rhode Island&quot;, SC= &quot;South Carolina&quot;, SD= &quot;South Dakota&quot;, TN= &quot;Tennessee&quot;, TX= &quot;Texas&quot;, UT=&quot;Utah&quot;, VT= &quot;Vermont&quot;, VA=&quot;Virginia&quot;, WA=&quot;Washington&quot;, WV= &quot;West Virginia&quot;, WI=&quot;Wisconsin&quot;, WY=&quot;Wyoming&quot; ))
+
+project1 &lt;- full_join(state, teenpreg, by=&quot;State&quot;)
+glimpse(project1)</code></pre>
+<pre><code>## Rows: 50
+## Columns: 12
+## $ State      &lt;chr&gt; &quot;Alabama&quot;, &quot;Alaska&quot;, &quot;Arizona&quot;, &quot;Arkansas&quot;, &quot;California&quot;, …
+## $ Population &lt;dbl&gt; 3615, 365, 2212, 2110, 21198, 2541, 3100, 579, 8277, 4931,…
+## $ Income     &lt;dbl&gt; 3624, 6315, 4530, 3378, 5114, 4884, 5348, 4809, 4815, 4091…
+## $ Illiteracy &lt;dbl&gt; 2.1, 1.5, 1.8, 1.9, 1.1, 0.7, 1.1, 0.9, 1.3, 2.0, 1.9, 0.6…
+## $ `Life Exp` &lt;dbl&gt; 69.05, 69.31, 70.55, 70.66, 71.71, 72.06, 72.48, 70.06, 70…
+## $ Murder     &lt;dbl&gt; 15.1, 11.3, 7.8, 10.1, 10.3, 6.8, 3.1, 6.2, 10.7, 13.9, 6.…
+## $ `HS Grad`  &lt;dbl&gt; 41.3, 66.7, 58.1, 39.9, 62.6, 63.9, 56.0, 54.6, 52.6, 40.6…
+## $ Frost      &lt;dbl&gt; 20, 152, 15, 65, 20, 166, 139, 103, 11, 60, 0, 126, 127, 1…
+## $ Area       &lt;dbl&gt; 50708, 566432, 113417, 51945, 156361, 103766, 4862, 1982, …
+## $ CivilWar   &lt;chr&gt; &quot;Confederate&quot;, &quot;Other&quot;, &quot;Other&quot;, &quot;Confederate&quot;, &quot;Union&quot;, &quot;…
+## $ Church     &lt;int&gt; 46, 26, 33, 45, 28, 25, 25, 35, 32, 39, 25, 34, 32, 35, 32…
+## $ Teen       &lt;int&gt; 62, 64, 60, 73, 59, 50, 44, 67, 60, 64, 65, 47, 57, 53, 44…</code></pre>
+<p>The common ID variable in each of my datasets was States, so there were 50 observations in each. I chose a full join to combine my datasets because I wanted to retain all the original data and still have a resulting 50 rows that are equal to the 50 states of the U.S. For that reason, none of my observations were dropped in the joining of my data and I came across no problems.</p>
+</div>
+<div id="wrangling" class="section level4">
+<h4>4. Wrangling</h4>
+<pre class="r"><code>project1 %&gt;% filter(between(Population, 300, 1000)) %&gt;% summarize(median(Frost))</code></pre>
+<pre><code>##   median(Frost)
+## 1         161.5</code></pre>
+<pre class="r"><code>project1 %&gt;% arrange(desc(Illiteracy)) %&gt;% summarize(var(Illiteracy))</code></pre>
+<pre><code>##   var(Illiteracy)
+## 1       0.3715306</code></pre>
+<pre class="r"><code>project1 %&gt;% mutate(popdensity=Population/Area) %&gt;% summarize(max(popdensity))</code></pre>
+<pre><code>##   max(popdensity)
+## 1       0.9750033</code></pre>
+<pre class="r"><code>project1 %&gt;% group_by(CivilWar) %&gt;% summarize_all(function(x)sum(!is.na(x)))</code></pre>
+<pre><code>## # A tibble: 4 x 12
+##   CivilWar State Population Income Illiteracy `Life Exp` Murder `HS Grad` Frost
+##   &lt;chr&gt;    &lt;int&gt;      &lt;int&gt;  &lt;int&gt;      &lt;int&gt;      &lt;int&gt;  &lt;int&gt;     &lt;int&gt; &lt;int&gt;
+## 1 Border       3          3      3          3          3      3         3     3
+## 2 Confede…    11         11     11         11         11     11        11    11
+## 3 Other       15         15     15         15         15     15        15    15
+## 4 Union       21         21     21         21         21     21        21    21
+## # … with 3 more variables: Area &lt;int&gt;, Church &lt;int&gt;, Teen &lt;int&gt;</code></pre>
+<pre class="r"><code>project1 %&gt;% group_by(CivilWar) %&gt;% summarize(mean(Income, na.rm = T))</code></pre>
+<pre><code>## # A tibble: 4 x 2
+##   CivilWar    `mean(Income, na.rm = T)`
+##   &lt;chr&gt;                           &lt;dbl&gt;
+## 1 Border                          3983 
+## 2 Confederate                     3888.
+## 3 Other                           4583.
+## 4 Union                           4682.</code></pre>
+<pre class="r"><code>project1 %&gt;% summarize(sd_pop=sd(Population, na.rm = T))</code></pre>
+<pre><code>##     sd_pop
+## 1 4464.491</code></pre>
+<pre class="r"><code>project1 %&gt;% group_by(State) %&gt;% summarize(`HS Grad`=mean(`HS Grad`)) %&gt;% filter(`HS Grad` == max(`HS Grad`))</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##   State `HS Grad`
+##   &lt;chr&gt;     &lt;dbl&gt;
+## 1 Utah       67.3</code></pre>
+<pre class="r"><code>project1 %&gt;% summarize(min(`Life Exp`))</code></pre>
+<pre><code>##   min(`Life Exp`)
+## 1           67.96</code></pre>
+<pre class="r"><code>project1 %&gt;% select(Church, Teen) %&gt;% summarize_all(mean)</code></pre>
+<pre><code>##   Church Teen
+## 1  32.62 54.7</code></pre>
+<pre class="r"><code>project1 %&gt;% summarize(max(Area))</code></pre>
+<pre><code>##   max(Area)
+## 1    566432</code></pre>
+<pre class="r"><code>cormat &lt;- project1 %&gt;% select_if(is.numeric) %&gt;% cor()</code></pre>
+<p>My summary statistics found that of the states with populations between 300 and 1000, the median number of days with a temperature below freezing was 161.5. The illiteracy of U.S. states had a variance of 0.3715306 and the maximum population density in a state was 0.9750033. The new variable population density was mutated by dividing the population of a state by its area. There were 3 states that were border states, 11 that were confederate, 15 that were other, and 21 that were union. Of those border states, the mean income was 3983, of confederate states it was 3888.273, of other states it was 4582.600, and of union states it was 4682.429.</p>
+<p>The standard deviation of populations among the 50 U.S. states was 4464.491. The maximum percentage of high-school graduates came from Utah and was 67.3%. The minimum life expectancy in years was 67.96. The mean percentage of people who attended church among the U.S. states was 32.62% and the mean number of pregnancies per 1000 teenage girls in a state among all U.S. states was 54.7. Finally, the maximum area of one U.S. state out of all 50 states was 566,432.</p>
+</div>
+<div id="visualizing" class="section level4">
+<h4>5. Visualizing</h4>
+<pre class="r"><code>tidycor &lt;- cormat %&gt;% as.data.frame() %&gt;% rownames_to_column(&quot;var1&quot;) %&gt;% pivot_longer(-1, names_to=&quot;var2&quot;, values_to=&quot;correlation&quot;)
+tidycor %&gt;% ggplot(aes(var1,var2, fill=correlation))+geom_tile()+geom_text(aes(label=round(correlation,2)))+xlab(&quot;&quot;)+ylab(&quot;&quot;)+coord_fixed()+scale_fill_gradient2(low=&quot;red&quot;, mid=&quot;white&quot;, high=&quot;blue&quot;)</code></pre>
+<p><img src="/project/Project1_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The correlation heatmap of my numeric variables above shows the correlations ranging from -1 to 1 with red being the most negative, white being near zero, and blue being the most positive. From this heatmap we can see strong correlations between murder and teen pregnancy rates, murder and life expectancies, illiteracy and teen pregnancy rates, and illiteray and murder. However, of those strong correlations, only murder rates and life expectancies had a negative correlation, and the remaining three had positive correlations.</p>
+<pre class="r"><code>ggplot(project1, aes(CivilWar, Income, fill=CivilWar)) + geom_bar(stat=&quot;summary&quot;, fun=mean) +ggtitle(&quot; Average U.S. Income Across Different Civil War Indentities&quot;)+xlab(&quot;Civil War Identification&quot;)+ylab(&quot;Income&quot;)+theme(axis.text.x = element_text(angle=45))+scale_fill_grey()</code></pre>
+<p><img src="/project/Project1_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The bar graph above displays the mean income of each grouping of U.S. states by their role in the Civil War. Each bar corresponds to a different identification category and is filled by a grey scale color. From this graph we can see that majority of the union and other states had higher incomes on average and confederate and border states tended to have lower incomes on average with union states being the highest and confederate states being the lowest.</p>
+<pre class="r"><code>ggplot(project1, aes(Murder, `Life Exp`, color= Teen)) + geom_point(size=3) +ggtitle(&quot;U.S. Murder Rates and Life Expectancies&quot;)+xlab(&quot;Murder Rates&quot;)+ylab(&quot;Life Expectancy (Years)&quot;)+theme_light() +geom_smooth(method = &quot;lm&quot;, color=&quot;Black&quot;)+scale_x_continuous(breaks=seq(0,20,2)) +scale_color_gradient(low=&quot;white&quot;, high=&quot;red&quot;)</code></pre>
+<p><img src="/project/Project1_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The scatter plot above displays the murder rates against the life expectancy in years of each U.S. state. Those points are then color coded depending on whether they had a high or low amount of teen pregnancies. From this graph and the line of best fit we see a negative decreasing slope between murder rates and life expectancies. In states with low murder rates there are higher life expectancies, and in states with high murder rates there are lower life expectancies. In general, the states with low murder rates and high life expectancies tend to also have lower teen pregnancies. Those with high murder rates and low life expectancies have high teen pregancy numbers.</p>
+</div>
+<div id="dimensionality-reduction" class="section level4">
+<h4>6. Dimensionality Reduction</h4>
+<pre class="r"><code>library(cluster)
+project2 &lt;- project1 %&gt;% select(Teen, Illiteracy, `Life Exp`)
+kmeans1 &lt;- project2 %&gt;% scale %&gt;% kmeans(3)
+kmeans1</code></pre>
+<pre><code>## K-means clustering with 3 clusters of sizes 15, 5, 30
+## 
+## Cluster means:
+##         Teen Illiteracy   Life Exp
+## 1  0.8260205   0.869518 -1.0786206
+## 2  1.4834071   1.132014  0.3735119
+## 3 -0.6602448  -0.623428  0.4770583
+## 
+## Clustering vector:
+##  [1] 1 1 1 2 3 3 3 1 1 1 2 3 3 3 3 3 1 1 3 3 3 3 3 1 3 3 3 1 3 3 2 1 1 3 3 2 3 3
+## [39] 3 1 3 1 2 3 3 3 3 1 3 3
+## 
+## Within cluster sum of squares by cluster:
+## [1] 20.902810  6.872124 30.525734
+##  (between_SS / total_SS =  60.3 %)
+## 
+## Available components:
+## 
+## [1] &quot;cluster&quot;      &quot;centers&quot;      &quot;totss&quot;        &quot;withinss&quot;     &quot;tot.withinss&quot;
+## [6] &quot;betweenss&quot;    &quot;size&quot;         &quot;iter&quot;         &quot;ifault&quot;</code></pre>
+<pre class="r"><code>kmeansclust &lt;- project1 %&gt;% mutate(cluster=as.factor(kmeans1$cluster))
+sil_width &lt;- vector()
+for(i in 2:10){
+  kms &lt;- kmeans(project2, centers = i)
+  sil &lt;- silhouette(kms$cluster, dist(project1))
+  sil_width[i]&lt;- mean(sil[,3])
+}
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+ scale_x_continuous(name = &quot;k&quot;, breaks=1:10)</code></pre>
+<p><img src="/project/Project1_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pam1 &lt;- project2 %&gt;% pam(k=2)
+pam1</code></pre>
+<pre><code>## Medoids:
+##      ID Teen Illiteracy Life Exp
+## [1,] 48   64        1.4    69.48
+## [2,] 12   47        0.6    71.87
+## Clustering vector:
+##  [1] 1 1 1 1 1 2 2 1 1 1 1 2 1 2 2 2 1 1 2 1 2 2 2 1 2 2 2 1 2 2 1 1 1 2 2 1 2 2
+## [39] 2 1 2 1 1 2 2 2 2 1 2 1
+## Objective function:
+##    build     swap 
+## 6.647911 5.267180 
+## 
+## Available components:
+##  [1] &quot;medoids&quot;    &quot;id.med&quot;     &quot;clustering&quot; &quot;objective&quot;  &quot;isolation&quot; 
+##  [6] &quot;clusinfo&quot;   &quot;silinfo&quot;    &quot;diss&quot;       &quot;call&quot;       &quot;data&quot;</code></pre>
+<pre class="r"><code>pamclust&lt;-project2 %&gt;% mutate(cluster=as.factor(pam1$clustering))
+library(plotly)
+pamclust %&gt;% plot_ly(x= ~Illiteracy, y = ~`Life Exp`, z = ~Teen, color= ~cluster,
+type = &quot;scatter3d&quot;, mode = &quot;markers&quot;) %&gt;% layout(autosize = F, width = 900, height = 400)</code></pre>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"visdat":{"5abf15802b6d":["function () ","plotlyVisDat"]},"cur_data":"5abf15802b6d","attrs":{"5abf15802b6d":{"x":{},"y":{},"z":{},"mode":"markers","color":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d"}},"layout":{"width":900,"height":400,"margin":{"b":40,"l":60,"t":25,"r":10},"autosize":false,"scene":{"xaxis":{"title":"Illiteracy"},"yaxis":{"title":"`Life Exp`"},"zaxis":{"title":"Teen"}},"hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[2.1,1.5,1.8,1.9,1.1,0.9,1.3,2,1.9,0.9,1.6,2.8,0.9,2.4,0.5,2.2,1.4,1.8,1.1,2.3,1.7,2.2,1.4,0.6],"y":[69.05,69.31,70.55,70.66,71.71,70.06,70.66,68.54,73.6,70.14,70.1,68.76,70.22,68.09,69.03,70.32,70.55,69.21,71.42,67.96,70.11,70.9,69.48,70.29],"z":[62,64,60,73,59,67,60,64,65,57,62,69,57,76,68,80,63,59,69,65,62,73,64,56],"mode":"markers","type":"scatter3d","name":"1","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"frame":null},{"x":[0.7,1.1,0.6,0.7,0.5,0.6,0.7,1.1,0.9,0.6,0.8,0.6,0.6,0.7,1.1,0.8,0.8,0.6,1,1.3,0.5,0.6,0.6,1.4,0.6,0.7],"y":[72.06,72.48,71.87,70.88,72.56,72.58,70.39,71.83,70.63,72.96,70.69,70.56,72.6,71.23,70.93,72.78,70.82,72.13,70.43,71.9,72.08,72.9,71.64,70.08,71.72,72.48],"z":[50,44,47,53,44,53,37,37,52,36,54,53,43,28,51,42,54,47,49,44,47,38,42,48,49,39],"mode":"markers","type":"scatter3d","name":"2","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>library(GGally)
+ggpairs(pamclust, columns=1:3, aes(color=cluster))</code></pre>
+<p><img src="/project/Project1_files/figure-html/unnamed-chunk-8-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pam1$silinfo$avg.width</code></pre>
+<pre><code>## [1] 0.5797145</code></pre>
+<pre class="r"><code>plot(pam1,which=2)</code></pre>
+<p><img src="/project/Project1_files/figure-html/unnamed-chunk-8-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The results show that the three numeric variables, teen pregnancy numbers, illiteracy rates, and life expectancies in years, cluster by 2. One cluster shows a group of states with a range of illiteracy rates, lower life expectancies and higher teen pregnancies. The other cluster shows higher life expectancies, lower illiteracy rates, and lower teen pregnancies. The clustering pairs also show moderate to moderately high correlations between the variables. Illiteracy and teen pregnancy has the strongest correlation and the only positive one. Illiteracy and life expectancy has a weaker negative correlation. Finally, life expectancy and teen pregancy has a stronger negative correlation. Finally, the goodness-of-fit of the 2 clusters shows reasonable structures for each cluster with silhouette widths of 0.60 and 0.56 giving an average width of 0.58.</p>
+</div>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

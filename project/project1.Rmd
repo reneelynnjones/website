@@ -1,0 +1,144 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: 'SDS348: Renee Jones rlj2277'
+date: "10/18/2020"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: no
+  word_document:
+    toc: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
+```
+
+## Data Wrangling and Data Exploration
+
+<P style="page-break-before: always">
+\newpage
+
+#### 1. Introduction 
+
+The first dataset I chose for my exploratory data analysis was state.x77, renamed State. It contains 50 observations for each U.S. state and includes data for each state. Those variables include population, income per capita, illiteracy, life expectancy, murder rates, high school graduation percentage, frost or mean days with a temperature below freezing, and area. My second dataset is TeenPregnancy which also includes 50 observations for each U.S. state and includes 3 other varibles. Those variables include their identity in the Civil War, church attendence percentage, and number of teen pregnancies. 
+
+The state.x77 dataset I found through the datasets package and it particulary stood out to me because it met all the criteria, but also because the data corresponded to content of another course I am taking. In Health and Society we are diving into the social conditions that lead to worse health outcomes and lower life expectancies, which include income and education. Three of those variables are included in this dataset. The TeenPregnancy dataset I found through the https://vincentarelbundock.github.io/Rdatasets/datasets.html source and it stood out to me because it not only had 50 states, but teen pregnancy also aligns with healthcare. I am interested to see how these datasets line up in terms of these social conditions and health outcomes across U.S. states. I expect to see associations between life expectancy, illiteracy, income, and teen pregnancies. Particulary states with low income and life expectancy will have high illiteracy and teen pregnancies. 
+
+```{R}
+library(Stat2Data)
+library(readr)
+TeenPregnancy <- read.csv("TeenPregnancy.csv")
+library(tidyverse)
+State <- state.x77
+```
+
+
+#### 2. Tidying: Rearranging Wide/Long 
+
+
+```{R}
+state <- State %>% as.data.frame %>% rownames_to_column("State")
+teenpregnancy <- TeenPregnancy %>% column_to_rownames("X1")
+teenpregnancy1 <- teenpregnancy %>% pivot_wider(names_from = "CivilWar", values_from="Church")
+teenpregnancy2 <- teenpregnancy1 %>% pivot_longer(cols = c("O", "C", "U", "B"), names_to= "CivilWar", values_to= "Church", values_drop_na=T)
+teenpregnancy$CivilWar[teenpregnancy$CivilWar=="C"] <- "Confederate"
+teenpregnancy$CivilWar[teenpregnancy$CivilWar=="O"] <- "Other"
+teenpregnancy$CivilWar[teenpregnancy$CivilWar=="U"] <- "Union"
+teenpregnancy$CivilWar[teenpregnancy$CivilWar== "B"] <- "Border"
+glimpse(teenpregnancy)
+```
+
+The state dataset had each U.S. state listed as a row with observations pertaining to that row, so I created a new column with each state. The teenpregnancy dataset had one unnecessary column listing the rows from 1 to 50, so I changed that column data into just rows. I then made the teenpregnancy dataset untidy by rearranging it wide with each Civil War catergory becoming its own column with the Church values. I then tidyed it back by rearranging it long and putting each Civil War catergory column back into one. Additionally, I changed the abbreviated one letter Civil War identities of each state from C, O, U, and B, to Confederate, Other, Union, and Border. 
+
+#### 3. Joining/Merging 
+
+
+```{R}
+teenpreg <- teenpregnancy %>% mutate(State=recode(State, AK="Alaska",AL= "Alabama", AR="Arkansas", AZ="Arizona", CA="California", CO="Colorado", CT= "Connecticut", DE = "Delaware", FL="Florida", GA="Georgia", HI="Hawaii", IA="Iowa", ID="Idaho", IL= "Illinois", IN="Indiana", KS= "Kansas", KY= "Kentucky", LA= "Louisiana", MA= "Maine", MD= "Maryland", ME= "Massachusetts", MI= "Michigan", MN="Minnesota", MO="Missouri", MS= "Mississippi", MT="Montana", NC="North Carolina", ND="North Dakota", NE="Nebraska", NV="Nevada", NH="New Hampshire", NJ="New Jersey", NY= "New York", NM="New Mexico", OH="Ohio", OK="Oklahoma", OR="Oregon", PA="Pennsylvania", RI="Rhode Island", SC= "South Carolina", SD= "South Dakota", TN= "Tennessee", TX= "Texas", UT="Utah", VT= "Vermont", VA="Virginia", WA="Washington", WV= "West Virginia", WI="Wisconsin", WY="Wyoming" ))
+
+project1 <- full_join(state, teenpreg, by="State")
+glimpse(project1)
+```
+
+The common ID variable in each of my datasets was States, so there were 50 observations in each. I chose a full join to combine my datasets because I wanted to retain all the original data and still have a resulting 50 rows that are equal to the 50 states of the U.S. For that reason, none of my observations were dropped in the joining of my data and I came across no problems. 
+
+
+#### 4. Wrangling 
+
+
+```{R}
+project1 %>% filter(between(Population, 300, 1000)) %>% summarize(median(Frost))
+project1 %>% arrange(desc(Illiteracy)) %>% summarize(var(Illiteracy))
+project1 %>% mutate(popdensity=Population/Area) %>% summarize(max(popdensity))
+project1 %>% group_by(CivilWar) %>% summarize_all(function(x)sum(!is.na(x)))
+project1 %>% group_by(CivilWar) %>% summarize(mean(Income, na.rm = T))
+project1 %>% summarize(sd_pop=sd(Population, na.rm = T))
+project1 %>% group_by(State) %>% summarize(`HS Grad`=mean(`HS Grad`)) %>% filter(`HS Grad` == max(`HS Grad`))
+project1 %>% summarize(min(`Life Exp`))
+project1 %>% select(Church, Teen) %>% summarize_all(mean)
+project1 %>% summarize(max(Area))
+cormat <- project1 %>% select_if(is.numeric) %>% cor()
+```
+
+My summary statistics found that of the states with populations between 300 and 1000, the median number of days with a temperature below freezing was 161.5. The illiteracy of U.S. states had a variance of 0.3715306 and the maximum population density in a state was 0.9750033. The new variable population density was mutated by dividing the population of a state by its area. There were 3 states that were border states, 11 that were confederate, 15 that were other, and 21 that were union. Of those border states, the mean income was 3983, of confederate states it was 3888.273, of other states it was 4582.600, and of union states it was 4682.429.
+
+The standard deviation of populations among the 50 U.S. states was 4464.491. The maximum percentage of high-school graduates came from Utah and was 67.3%. The minimum life expectancy in years was 67.96. The mean percentage of people who attended church among the U.S. states was 32.62% and the mean number of pregnancies per 1000 teenage girls in a state among all U.S. states was 54.7. Finally, the maximum area of one U.S. state out of all 50 states was 566,432.  
+
+#### 5. Visualizing 
+
+
+```{R fig.height=5}
+tidycor <- cormat %>% as.data.frame() %>% rownames_to_column("var1") %>% pivot_longer(-1, names_to="var2", values_to="correlation")
+tidycor %>% ggplot(aes(var1,var2, fill=correlation))+geom_tile()+geom_text(aes(label=round(correlation,2)))+xlab("")+ylab("")+coord_fixed()+scale_fill_gradient2(low="red", mid="white", high="blue")
+```
+
+The correlation heatmap of my numeric variables above shows the correlations ranging from -1 to 1 with red being the most negative, white being near zero, and blue being the most positive. From this heatmap we can see strong correlations between murder and teen pregnancy rates, murder and life expectancies, illiteracy and teen pregnancy rates, and illiteray and murder. However, of those strong correlations, only murder rates and life expectancies had a negative correlation, and the remaining three had positive correlations. 
+    
+```{R fig.height=8}
+ggplot(project1, aes(CivilWar, Income, fill=CivilWar)) + geom_bar(stat="summary", fun=mean) +ggtitle(" Average U.S. Income Across Different Civil War Indentities")+xlab("Civil War Identification")+ylab("Income")+theme(axis.text.x = element_text(angle=45))+scale_fill_grey()
+```
+
+The bar graph above displays the mean income of each grouping of U.S. states by their role in the Civil War. Each bar corresponds to a different identification category and is filled by a grey scale color. From this graph we can see that majority of the union and other states had higher incomes on average and confederate and border states tended to have lower incomes on average with union states being the highest and confederate states being the lowest. 
+
+```{R}
+ggplot(project1, aes(Murder, `Life Exp`, color= Teen)) + geom_point(size=3) +ggtitle("U.S. Murder Rates and Life Expectancies")+xlab("Murder Rates")+ylab("Life Expectancy (Years)")+theme_light() +geom_smooth(method = "lm", color="Black")+scale_x_continuous(breaks=seq(0,20,2)) +scale_color_gradient(low="white", high="red")
+```
+
+The scatter plot above displays the murder rates against the life expectancy in years of each U.S. state. Those points are then color coded depending on whether they had a high or low amount of teen pregnancies. From this graph and the line of best fit we see a negative decreasing slope between murder rates and life expectancies. In states with low murder rates there are higher life expectancies, and in states with high murder rates there are lower life expectancies. In general, the states with low murder rates and high life expectancies tend to also have lower teen pregnancies. Those with high murder rates and low life expectancies have high teen pregancy numbers.  
+
+
+#### 6. Dimensionality Reduction  
+
+
+```{R}
+library(cluster)
+project2 <- project1 %>% select(Teen, Illiteracy, `Life Exp`)
+kmeans1 <- project2 %>% scale %>% kmeans(3)
+kmeans1
+kmeansclust <- project1 %>% mutate(cluster=as.factor(kmeans1$cluster))
+sil_width <- vector()
+for(i in 2:10){
+  kms <- kmeans(project2, centers = i)
+  sil <- silhouette(kms$cluster, dist(project1))
+  sil_width[i]<- mean(sil[,3])
+}
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+ scale_x_continuous(name = "k", breaks=1:10)
+pam1 <- project2 %>% pam(k=2)
+pam1
+pamclust<-project2 %>% mutate(cluster=as.factor(pam1$clustering))
+library(plotly)
+pamclust %>% plot_ly(x= ~Illiteracy, y = ~`Life Exp`, z = ~Teen, color= ~cluster,
+type = "scatter3d", mode = "markers") %>% layout(autosize = F, width = 900, height = 400)
+library(GGally)
+ggpairs(pamclust, columns=1:3, aes(color=cluster))
+pam1$silinfo$avg.width
+plot(pam1,which=2)
+```
+
+The results show that the three numeric variables, teen pregnancy numbers, illiteracy rates, and life expectancies in years, cluster by 2. One cluster shows a group of states with a range of illiteracy rates, lower life expectancies and higher teen pregnancies. The other cluster shows higher life expectancies, lower illiteracy rates, and lower teen pregnancies. The clustering pairs also show moderate to moderately high correlations between the variables. Illiteracy and teen pregnancy has the strongest correlation and the only positive one. Illiteracy and life expectancy has a weaker negative correlation. Finally, life expectancy and teen pregancy has a stronger negative correlation. Finally, the goodness-of-fit of the 2 clusters shows reasonable structures for each cluster with silhouette widths of 0.60 and 0.56 giving an average width of 0.58.
